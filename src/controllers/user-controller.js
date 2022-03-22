@@ -1,5 +1,5 @@
-const User = require("../models/user-model");
 const UserModel = require("../models/user-model");
+const { validationResult } = require("express-validator");
 
 module.exports = {
   // get all user list
@@ -11,19 +11,33 @@ module.exports = {
 
   // create new user
   createUser: (req, res) => {
-    if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
-      res
-        .send(400)
-        .send({ success: false, message: "Please Provide All Information" });
-    } else {
-      const user = new UserModel(req.body);
-      UserModel.createUser(user, (user) => {
-        res.send({
-          status: true,
-          message: "User Information Successfully Recorded",
-          data: user.insertId,
+    try {
+      const errors = validationResult(req); // Finds the validation errors in this request and wraps them in an object with handy functions
+
+      if (!errors.isEmpty()) {
+        res.status(422).json({ errors: errors.array() });
+        return;
+      }
+      
+      if (
+        req.body.constructor === Object &&
+        Object.keys(req.body).length === 0
+      ) {
+        res
+          .send(400)
+          .send({ success: false, message: "Please Provide All Information" });
+      } else {
+        const user = new UserModel(req.body);
+        UserModel.createUser(user, (user) => {
+          res.send({
+            status: true,
+            message: "User Information Successfully Recorded",
+            data: user.insertId,
+          });
         });
-      });
+      }
+    } catch (error) {
+      return next(error);
     }
   },
 
@@ -36,19 +50,33 @@ module.exports = {
 
   // update user by id
   updateUser: (req, res) => {
-    if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
-      res
-        .send(400)
-        .send({ success: false, message: "Please Provide All Information" });
-    } else {
-      const user = new UserModel(req.body);
-      UserModel.updateUser(req.params.id, user, (user) => {
-        res.send({
-          status: true,
-          message: "User Information Successfully Updated",
-          data: user.insertId,
+    try {
+      const errors = validationResult(req); // Finds the validation errors in this request and wraps them in an object with handy functions
+
+      if (!errors.isEmpty()) {
+        res.status(422).json({ errors: errors.array() });
+        return;
+      }
+
+      if (
+        req.body.constructor === Object &&
+        Object.keys(req.body).length === 0
+      ) {
+        res
+          .send(400)
+          .send({ success: false, message: "Please Provide All Information" });
+      } else {
+        const user = new UserModel(req.body);
+        UserModel.updateUser(req.params.id, user, (user) => {
+          res.send({
+            status: true,
+            message: "User Information Successfully Updated",
+            data: user.insertId,
+          });
         });
-      });
+      }
+    } catch (error) {
+      return next(error);
     }
   },
 
