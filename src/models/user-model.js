@@ -14,16 +14,23 @@ User.getUserList = (callback) => {
   });
 };
 
-User.createUser = (user, callback) => {
-  let sql = `insert into user (id, name, password, type, status) 
-              values('', '${user.name}', '${user.password}', '${user.type}', '${user.status}');`;
+User.getUserById = (id, callback) => {
+  let sql = "SELECT * FROM user where user.id = " + id + "";
   db.getResults(sql, function (results) {
     callback(results);
   });
 };
 
-User.getUserById = (id, callback) => {
-  let sql = "SELECT * FROM user where user.id = " + id + "";
+User.getUserByUsername = (id, username, callback) => {
+  let sql = `SELECT * FROM user where user.id!='${id}' and user.name='${username}'`;
+  db.getResults(sql, function (results) {
+    callback(results);
+  });
+};
+
+User.createUser = (user, callback) => {
+  let sql = `insert into user (id, name, password, type, status) 
+              values('', '${user.name}', '${user.password}', '${user.type}', '${user.status}');`;
   db.getResults(sql, function (results) {
     callback(results);
   });
