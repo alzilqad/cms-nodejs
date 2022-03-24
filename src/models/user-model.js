@@ -58,4 +58,11 @@ User.deleteUser = (id, callback) => {
   });
 };
 
+User.authenticateUser = (username, callback) => {
+  let sql = `SELECT * FROM user where user.name='${username}'`;
+  db.getResults(sql, function (results) {
+    callback(results);
+  });
+}
+
 module.exports = User;

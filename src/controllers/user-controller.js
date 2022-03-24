@@ -1,6 +1,6 @@
 const UserModel = require("../models/user-model");
 const { validationResult } = require("express-validator");
-const { response } = require("express");
+const bcrypt = require("bcrypt");
 
 module.exports = {
   // get all user list
@@ -11,8 +11,9 @@ module.exports = {
   },
 
   // create new user
-  createUser: (req, res) => {
+  createUser: async (req, res) => {
     try {
+      req.body.password = await bcrypt.hash(req.body.password, 10); // hashed password
       const errors = validationResult(req); // Finds the validation errors in this request and wraps them in an object with handy functions
 
       // error messages
@@ -62,10 +63,11 @@ module.exports = {
   },
 
   // update user by id
-  updateUser: (req, res) => {
+  updateUser: async (req, res) => {
     try {
       const errors = validationResult(req); // Finds the validation errors in this request and wraps them in an object with handy functions
-
+      req.body.password = await bcrypt.hash(req.body.password, 10); // hashed password
+      console.log(req.body.password);
       // error messages
       if (!errors.isEmpty()) {
         res.status(422).json({ errors: errors.array() });
@@ -114,5 +116,47 @@ module.exports = {
         data: user.insertId,
       });
     });
+  },
+
+  // authenticate user
+  authenticateUser: (req, res) => {
+    try {
+      const errors = validationResult(req); // Finds the validation errors in this request and wraps them in an object with handy functions
+
+      // error messages
+      if (!errors.isEmpty()) {
+        res.status(422).json({ errors: errors.array() });
+        return;
+      }
+
+      // check if all the information is provided
+      if (
+        req.body.constructor === Object &&
+        Object.keys(req.body).length === 0
+      ) {
+        res
+          .status(400)
+          .send({ success: false, message: "Please Provide All Information" });
+      } else {
+        // check if username is unique
+        UserModel.authenticateUser(req.body.name, async (user) => {
+          //check user exists
+          if (Object.keys(user).length === 0) {
+            res.status(400).send({
+              success: false,
+              message: "User doesn't exist",
+            });
+          } else {
+            if (await bcrypt.compare(req.body.password, user[0].password)) {
+              res.send("User is authenticated");
+            } else {
+              res.send("Password is incorrect");
+            }
+          }
+        });
+      }
+    } catch (error) {
+      return next(error);
+    }
   },
 };

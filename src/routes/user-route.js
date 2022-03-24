@@ -11,7 +11,7 @@ router.get("/", userController.getUserList);
 
 // create new user
 router.post(
-  "/",
+  "/signup",
   userValidation.validate("createUser"),
   userController.createUser
 );
@@ -28,5 +28,12 @@ router.put(
 
 // delete user by id
 router.delete("/:id", userController.deleteUser);
+
+// authenticate user
+router.post(
+  "/login",
+  userValidation.validate("authenticateUser"),
+  userController.authenticateUser
+);
 
 module.exports = router;
