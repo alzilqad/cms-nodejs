@@ -3,11 +3,14 @@ const router = express.Router();
 
 const userController = require("../controllers/user-controller");
 
-const { body } = require("express-validator");
 const userValidation = require("../middleware/user-validation");
+const userAuthenticate = require("../middleware/user-authentication");
 
 // get all User
 router.get("/", userController.getUserList);
+
+// get user by id
+router.get("/profile/:id", userController.getUserById);
 
 // create new user
 router.post(
@@ -15,9 +18,6 @@ router.post(
   userValidation.validate("createUser"),
   userController.createUser
 );
-
-// get user by id
-router.get("/:id", userController.getUserById);
 
 // update user by id
 router.put(
@@ -34,6 +34,16 @@ router.post(
   "/login",
   userValidation.validate("authenticateUser"),
   userController.authenticateUser
+);
+
+// generate access token
+router.post("/token", userController.tokenGeneration);
+
+// get logged in user information
+router.get(
+  "/profile",
+  userAuthenticate.authenticateToken,
+  userController.getUserInformation
 );
 
 module.exports = router;

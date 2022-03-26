@@ -15,14 +15,16 @@ User.getUserList = (callback) => {
 };
 
 User.getUserById = (id, callback) => {
-  let sql = "SELECT * FROM user where user.id = " + id + "";
+  let sql = `SELECT * FROM user where user.id = '${id}'`;
   db.getResults(sql, function (results) {
     callback(results);
   });
 };
 
 User.getUserByUsername = (id, username, callback) => {
-  let sql = `SELECT * FROM user where user.id!='${id}' and user.name='${username}'`;
+  let sql = `SELECT * FROM user 
+              where user.id!='${id}' 
+              and user.name='${username}'`;
   db.getResults(sql, function (results) {
     callback(results);
   });
@@ -63,6 +65,23 @@ User.authenticateUser = (username, callback) => {
   db.getResults(sql, function (results) {
     callback(results);
   });
-}
+};
+
+User.validateRefreshToken = (token, callback) => {
+  let sql = `SELECT * FROM user 
+              where user.token = '${token}'`;
+  db.getResults(sql, function (results) {
+    callback(results);
+  });
+};
+
+User.updateRefreshToken = (username, token, callback) => {
+  let sql = `update user set 
+              token='${token}'
+              where user.name='${username}'`;
+  db.getResults(sql, function (results) {
+    callback(results);
+  });
+};
 
 module.exports = User;

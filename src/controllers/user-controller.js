@@ -1,11 +1,21 @@
+const bcrypt = require("bcrypt");
+
 const UserModel = require("../models/user-model");
 const { validationResult } = require("express-validator");
-const bcrypt = require("bcrypt");
+const userAuthenticate = require("../middleware/user-authentication");
+const { generateAccessToken } = require("../middleware/user-authentication");
 
 module.exports = {
   // get all user list
   getUserList: (req, res) => {
     UserModel.getUserList((users) => {
+      res.send(users);
+    });
+  },
+
+  // get user by id
+  getUserById: (req, res) => {
+    UserModel.getUserById(req.params.id, (users) => {
       res.send(users);
     });
   },
@@ -27,9 +37,10 @@ module.exports = {
         req.body.constructor === Object &&
         Object.keys(req.body).length === 0
       ) {
-        res
-          .send(400)
-          .send({ success: false, message: "Please Provide All Information" });
+        res.send(400).send({
+          success: false,
+          message: "Please Provide All Information",
+        });
       } else {
         // check if username is unique
         UserModel.getUserByUsername(req.params.id, req.body.name, (user) => {
@@ -53,13 +64,6 @@ module.exports = {
     } catch (error) {
       return next(error);
     }
-  },
-
-  // get user by id
-  getUserById: (req, res) => {
-    UserModel.getUserById(req.params.id, (users) => {
-      res.send(users);
-    });
   },
 
   // update user by id
@@ -118,7 +122,7 @@ module.exports = {
     });
   },
 
-  // authenticate user
+  // login user
   authenticateUser: (req, res) => {
     try {
       const errors = validationResult(req); // Finds the validation errors in this request and wraps them in an object with handy functions
@@ -148,7 +152,24 @@ module.exports = {
             });
           } else {
             if (await bcrypt.compare(req.body.password, user[0].password)) {
-              res.send("User is authenticated");
+              // if authentication is successful
+              const sess = {
+                id: user[0].id,
+                name: user[0].name,
+                type: user[0].type,
+                status: user[0].status,
+              };
+
+              const accessToken = userAuthenticate.generateAccessToken(sess); // create access token
+              const refreshToken = userAuthenticate.generateRefreshToken(sess); // create refresh token
+
+              // update refresh token in the database
+              UserModel.updateRefreshToken(sess.name, refreshToken, (user) => {
+                res.send({
+                  accessToken: accessToken,
+                  refreshToken: refreshToken,
+                });
+              });
             } else {
               res.send("Password is incorrect");
             }
@@ -158,5 +179,37 @@ module.exports = {
     } catch (error) {
       return next(error);
     }
+  },
+
+  // access token generate
+  tokenGeneration: (req, res) => {
+    const refreshToken = req.body.token;
+    if (refreshToken == null) return res.sendStatus(401);
+    UserModel.validateRefreshToken(refreshToken, (user) => {
+      if (!user) res.sendStatus(403);
+      else {
+        if (userAuthenticate.authenticateRefreshToken(refreshToken)) {
+          // if authentication is successful
+          const sess = {
+            id: user[0].id,
+            name: user[0].name,
+            type: user[0].type,
+            status: user[0].status,
+          };
+
+          const accessToken = generateAccessToken(sess);
+          res.json({ accessToken: accessToken });
+        } else {
+          res.status(403).send("Token is not valid");
+        }
+      }
+    });
+  },
+
+  // get logged in user information
+  getUserInformation: (req, res) => {
+    UserModel.getUserById(req.user.id, (users) => {
+      res.send(users);
+    });
   },
 };
