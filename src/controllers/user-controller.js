@@ -189,6 +189,7 @@ module.exports = {
       if (!user) res.sendStatus(403);
       else {
         if (userAuthenticate.authenticateRefreshToken(refreshToken)) {
+          console.log(user);
           // if authentication is successful
           const sess = {
             id: user[0].id,

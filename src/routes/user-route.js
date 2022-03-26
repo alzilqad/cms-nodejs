@@ -7,14 +7,15 @@ const userValidation = require("../middleware/user-validation");
 const userAuthenticate = require("../middleware/user-authentication");
 
 // get all User
-router.get("/", userController.getUserList);
+router.get("/", userAuthenticate.isAdmin, userController.getUserList);
 
 // get user by id
-router.get("/profile/:id", userController.getUserById);
+router.get("/profile/:id", userAuthenticate.isAdmin, userController.getUserById);
 
 // create new user
 router.post(
   "/signup",
+  userAuthenticate.isAdmin, 
   userValidation.validate("createUser"),
   userController.createUser
 );
@@ -22,12 +23,13 @@ router.post(
 // update user by id
 router.put(
   "/:id",
+  userAuthenticate.isAdmin, 
   userValidation.validate("updateUser"),
   userController.updateUser
 );
 
 // delete user by id
-router.delete("/:id", userController.deleteUser);
+router.delete("/:id", userAuthenticate.isAdmin, userController.deleteUser);
 
 // authenticate user
 router.post(
