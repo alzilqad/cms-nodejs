@@ -7,91 +7,98 @@ var User = function (user) {
   this.status = user.status ? user.status : 1;
 };
 
-User.getUserList = (callback) => {
-  let sql = "SELECT * FROM user";
-  db.getResults(sql, function (results) {
-    callback(results);
+User.getUserList = () =>
+  new Promise(async (resolve, reject) => {
+    let sql = "SELECT * FROM user";
+    const result = await db.getResults(sql);
+    resolve(result);
   });
-};
 
-User.getUserById = (id, callback) => {
-  let sql = `SELECT * FROM user where user.id = '${id}'`;
-  db.getResults(sql, function (results) {
-    callback(results);
+User.getUserById = (id) =>
+  new Promise(async (resolve, reject) => {
+    let sql = `SELECT * FROM user where user.id = '${id}'`;
+    const result = await db.getResults(sql);
+    resolve(result);
   });
-};
 
-User.getUserByUsername = (id, username, callback) => {
-  let sql = `SELECT * FROM user 
-              where user.id!='${id}' 
-              and user.name='${username}'`;
-  db.getResults(sql, function (results) {
-    callback(results);
+User.getUserByUsername = (username) =>
+  new Promise(async (resolve, reject) => {
+    let sql = `SELECT * FROM user
+                where user.name='${username}'`;
+    const result = await db.getResults(sql);
+    resolve(result);
   });
-};
 
-User.createUser = (user, callback) => {
-  let sql = `insert into user (id, name, password, type, status) 
-              values('', '${user.name}', '${user.password}', '${user.type}', '${user.status}');`;
-  db.getResults(sql, function (results) {
-    callback(results);
+User.checkUsernameExist = (username) =>
+  new Promise(async (resolve, reject) => {
+    let sql = `SELECT count(*) as row FROM user
+                where user.name='${username}'`;
+    const result = await db.getResults(sql);
+    resolve(result[0].row > 0);
   });
-};
 
-User.updateUser = (id, user, callback) => {
-  let sql = `update user set 
-              name='${user.name}', 
-              password='${user.password}', 
-              type='${user.type}', 
-              status='${user.status}'
-              token='${null}'
-              where id='${id}'`;
-  db.getResults(sql, function (results) {
-    callback(results);
+User.createUser = (user) =>
+  new Promise(async (resolve, reject) => {
+    let sql = `insert into user (id, name, password, type, status) 
+                values('', '${user.name}', '${user.password}', '${user.type}', '${user.status}');`;
+    const result = await db.execute(sql);
+    resolve(result);
   });
-};
 
-User.deleteUser = (id, callback) => {
-  // let sql = "DELETE from user where id='" + id + "'";
-  let sql = `update user set
-              status='0'
-              where id='${id}'`;
-  db.getResults(sql, function (results) {
-    callback(results);
+User.updateUser = (id, user) =>
+  new Promise(async (resolve, reject) => {
+    let sql = `update user set 
+                name='${user.name}', 
+                password='${user.password}', 
+                type='${user.type}', 
+                status='${user.status}',
+                token='${null}'
+                where id='${id}'`;
+    const result = await db.execute(sql);
+    resolve(result);
   });
-};
 
-User.authenticateUser = (username, callback) => {
-  let sql = `SELECT * FROM user where user.name='${username}'`;
-  db.getResults(sql, function (results) {
-    callback(results);
+User.deleteUser = (id) =>
+  new Promise(async (resolve, reject) => {
+    // let sql = "DELETE from user where id='" + id + "'";
+    let sql = `update user set
+                status='0'
+                where id='${id}'`;
+    const results = await db.execute(sql);
+    resolve(results);
   });
-};
 
-User.validateRefreshToken = (token, callback) => {
-  let sql = `SELECT * FROM user 
+User.authenticateUser = (username) =>
+  new Promise(async (resolve, reject) => {
+    let sql = `SELECT * FROM user where user.name='${username}'`;
+    const results = await db.getResults(sql);
+    resolve(results);
+  });
+
+User.validateRefreshToken = (token) =>
+  new Promise(async (resolve, reject) => {
+    let sql = `SELECT * FROM user 
               where user.token = '${token}'`;
-  db.getResults(sql, function (results) {
-    callback(results);
+    const results = await db.getResults(sql);
+    resolve(results);
   });
-};
 
-User.updateRefreshToken = (username, token, callback) => {
-  let sql = `update user set 
-              token='${token}'
-              where user.name='${username}'`;
-  db.getResults(sql, function (results) {
-    callback(results);
+User.updateRefreshToken = (username, token) =>
+  new Promise(async (resolve, reject) => {
+    let sql = `update user set 
+                token='${token}'
+                where user.name='${username}'`;
+    const results = await db.execute(sql);
+    resolve(results);
   });
-};
 
-User.deauthenticateUser = (token, callback) => {
-  let sql = `update user set 
+User.deauthenticateUser = (token) =>
+  new Promise(async (resolve, reject) => {
+    let sql = `update user set 
               token='${null}'
               where user.token='${token}'`;
-  db.getResults(sql, function (results) {
-    callback(results);
+    const results = await db.execute(sql);
+    resolve(results);
   });
-};
 
 module.exports = User;

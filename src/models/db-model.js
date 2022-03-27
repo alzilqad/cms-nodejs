@@ -1,51 +1,58 @@
 const mysql = require("mysql");
 
-var getConnection = function (callback) {
-  const connection = mysql.createConnection({
-    host: "127.0.0.1",
-    database: "user",
-    user: "root",
-    password: "",
-  });
+var getConnection = () => {
+  return new Promise((resolve, reject) => {
+    const connection = mysql.createConnection({
+      host: "127.0.0.1",
+      database: "user",
+      user: "root",
+      password: "",
+    });
 
-  connection.connect(function (err) {
-    if (err) {
-      console.error("error connecting: " + err.stack);
-      return;
-    }
-    console.log("connected as id " + connection.threadId);
-  });
+    connection.connect((err) => {
+      if (err) {
+        console.error("error connecting: " + err.stack);
+        return;
+      }
+      console.log("connected as id " + connection.threadId);
+    });
 
-  callback(connection);
+    resolve(connection);
+  });
 };
 
 module.exports = {
-  getResults: function (sql, callback) {
-    getConnection(function (connection) {
-      connection.query(sql, function (error, results) {
+  getResults: async (sql) => {
+    const connection = await getConnection();
+
+    return new Promise((resolve, reject) => {
+      connection.query(sql, (error, results) => {
         if (!error) {
-			callback(results);
-		  } else {
-			console.log(error);
-		  }
+          resolve(results);
+        } else {
+          console.log(error);
+        }
       });
 
-      connection.end(function (err) {
+      connection.end((err) => {
         console.log("connection end...");
       });
     });
   },
-  execute: function (sql, callback) {
-    getConnection(function (connection) {
-      connection.query(sql, function (error, status) {
-        if (status) {
-          callback(true);
+
+  execute: async (sql) => {
+    const connection = await getConnection();
+
+    return new Promise((resolve, reject) => {
+      connection.query(sql, (error, status) => {
+        if (status && !error) {
+          resolve(true);
         } else {
-          callback(false);
+          console.log(error);
         }
       });
 
-      connection.end(function (err) {
+      connection.end((err) => {
         console.log("connection end...");
       });
     });
