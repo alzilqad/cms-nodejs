@@ -84,4 +84,13 @@ User.updateRefreshToken = (username, token, callback) => {
   });
 };
 
+User.deauthenticateUser = (token, callback) => {
+  let sql = `update user set 
+              token='${null}'
+              where user.token='${token}'`;
+  db.getResults(sql, function (results) {
+    callback(results);
+  });
+};
+
 module.exports = User;

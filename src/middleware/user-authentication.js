@@ -37,7 +37,6 @@ module.exports = {
     const token = authHeader && authHeader.split(" ")[1];
     if (token == null) return res.status(401).send("Token is not matched");
 
-    console.log(token);
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
       if (error) return res.status(403).send("Token is not valid");
       req.user = user;
@@ -51,7 +50,6 @@ module.exports = {
     const token = authHeader && authHeader.split(" ")[1];
     if (token == null) return res.status(401).send("Token is not matched");
 
-    console.log(token);
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
       if (error) return res.status(403).send("Token is not valid");
       req.user = user;

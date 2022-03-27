@@ -186,10 +186,9 @@ module.exports = {
     const refreshToken = req.body.token;
     if (refreshToken == null) return res.sendStatus(401);
     UserModel.validateRefreshToken(refreshToken, (user) => {
-      if (!user) res.sendStatus(403);
+      if (Object.keys(user).length === 0) res.sendStatus(403);
       else {
         if (userAuthenticate.authenticateRefreshToken(refreshToken)) {
-          console.log(user);
           // if authentication is successful
           const sess = {
             id: user[0].id,
@@ -211,6 +210,21 @@ module.exports = {
   getUserInformation: (req, res) => {
     UserModel.getUserById(req.user.id, (users) => {
       res.send(users);
+    });
+  },
+
+  deauthenticateUser: (req, res) => {
+    const refreshToken = req.body.token;
+    if (refreshToken == null) return res.sendStatus(401);
+    UserModel.deauthenticateUser(refreshToken, (user) => {
+      if (!user) res.sendStatus(403);
+      else {
+        res.send({
+          status: true,
+          message: "User Refresh Token is Successfully Reseted",
+          data: user.insertId,
+        });
+      }
     });
   },
 };

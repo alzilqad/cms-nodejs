@@ -10,12 +10,17 @@ const userAuthenticate = require("../middleware/user-authentication");
 router.get("/", userAuthenticate.isAdmin, userController.getUserList);
 
 // get user by id
-router.get("/profile/:id", userAuthenticate.isAdmin, userController.getUserById);
+router.get(
+  "/profile/:id",
+  userAuthenticate.isAdmin,
+  userController.getUserById
+);
 
 // create new user
 router.post(
   "/signup",
-  userAuthenticate.isAdmin, 
+  userAuthenticate.authenticateToken,
+  userAuthenticate.isAdmin,
   userValidation.validate("createUser"),
   userController.createUser
 );
@@ -23,13 +28,19 @@ router.post(
 // update user by id
 router.put(
   "/:id",
-  userAuthenticate.isAdmin, 
+  userAuthenticate.authenticateToken,
+  userAuthenticate.isAdmin,
   userValidation.validate("updateUser"),
   userController.updateUser
 );
 
 // delete user by id
-router.delete("/:id", userAuthenticate.isAdmin, userController.deleteUser);
+router.delete(
+  "/:id",
+  userAuthenticate.authenticateToken,
+  userAuthenticate.isAdmin,
+  userController.deleteUser
+);
 
 // authenticate user
 router.post(
@@ -47,5 +58,8 @@ router.get(
   userAuthenticate.authenticateToken,
   userController.getUserInformation
 );
+
+// logged out user
+router.post("/logout", userController.deauthenticateUser);
 
 module.exports = router;
