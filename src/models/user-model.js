@@ -52,7 +52,7 @@ User.updateUser = (id, user) =>
                 password='${user.password}', 
                 type='${user.type}', 
                 status='${user.status}',
-                token='${null}'
+                token=NULL
                 where id='${id}'`;
     const result = await db.execute(sql);
     resolve(result);
@@ -95,7 +95,7 @@ User.updateRefreshToken = (username, token) =>
 User.deauthenticateUser = (token) =>
   new Promise(async (resolve, reject) => {
     let sql = `update user set 
-              token='${null}'
+              token=NULL
               where user.token='${token}'`;
     const results = await db.execute(sql);
     resolve(results);

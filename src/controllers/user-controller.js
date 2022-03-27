@@ -85,8 +85,8 @@ module.exports = {
           .send({ success: false, message: "Please Provide All Information" });
       } else {
         // check if username is unique
-        const exist = await UserModel.checkUsernameExist(req.body.name);
-        if (exist) {
+        const exist = await UserModel.getUserByUsername(req.body.name);
+        if (Object.keys(exist).length > 0 && exist[0].id != req.params.id) {
           res
             .status(400)
             .send({ success: false, message: "Username is taken" });
@@ -174,7 +174,7 @@ module.exports = {
                 accessToken: accessToken,
                 refreshToken: refreshToken,
               });
-            } 
+            }
           } else {
             res.send("Password is incorrect");
           }
