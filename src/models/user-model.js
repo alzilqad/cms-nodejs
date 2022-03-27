@@ -44,6 +44,7 @@ User.updateUser = (id, user, callback) => {
               password='${user.password}', 
               type='${user.type}', 
               status='${user.status}'
+              token='${null}'
               where id='${id}'`;
   db.getResults(sql, function (results) {
     callback(results);

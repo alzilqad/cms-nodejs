@@ -21,9 +21,8 @@ module.exports = {
   },
 
   // create new user
-  createUser: async (req, res) => {
+  createUser: (req, res) => {
     try {
-      req.body.password = await bcrypt.hash(req.body.password, 10); // hashed password
       const errors = validationResult(req); // Finds the validation errors in this request and wraps them in an object with handy functions
 
       // error messages
@@ -43,9 +42,10 @@ module.exports = {
         });
       } else {
         // check if username is unique
-        UserModel.getUserByUsername(req.params.id, req.body.name, (user) => {
+        UserModel.getUserByUsername(req.params.id, req.body.name, async (user) => {
           if (Object.keys(user).length === 0) {
             // create user information
+            req.body.password = await bcrypt.hash(req.body.password, 10); // hashed password
             const user = new UserModel(req.body);
             UserModel.createUser(user, (user) => {
               res.send({
@@ -67,11 +67,9 @@ module.exports = {
   },
 
   // update user by id
-  updateUser: async (req, res) => {
+  updateUser: (req, res) => {
     try {
       const errors = validationResult(req); // Finds the validation errors in this request and wraps them in an object with handy functions
-      req.body.password = await bcrypt.hash(req.body.password, 10); // hashed password
-      console.log(req.body.password);
       // error messages
       if (!errors.isEmpty()) {
         res.status(422).json({ errors: errors.array() });
@@ -88,9 +86,10 @@ module.exports = {
           .send({ success: false, message: "Please Provide All Information" });
       } else {
         // check if username is unique
-        UserModel.getUserByUsername(req.params.id, req.body.name, (user) => {
+        UserModel.getUserByUsername(req.params.id, req.body.name, async (user) => {
           if (Object.keys(user).length === 0) {
             // update user information
+            req.body.password = await bcrypt.hash(req.body.password, 10); // hashed password
             const user = new UserModel(req.body);
             UserModel.updateUser(req.params.id, user, (user) => {
               res.send({
